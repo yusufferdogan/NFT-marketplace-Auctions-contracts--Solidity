@@ -19,6 +19,7 @@ module.exports = {
     'sokol',
     // projects
     'ierc',
+    'FNFT',
   ],
 
   ignoreWords: [],
