@@ -23,6 +23,13 @@
    -->
 </div>
 
+#TODO
+ - [X] English Auction 
+ - [ ] Dutch Auction 
+ - [ ] NFT swap
+ - [ ] SEALED_BID AUCTION
+
+
 # Coverage Report
 
 | Statements                                                                               | Functions                                                                              | Lines                                                                          |
