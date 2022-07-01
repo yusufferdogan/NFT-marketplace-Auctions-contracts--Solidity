@@ -1,3 +1,7 @@
+    <a href="http://makeapullrequest.com">
+      <img alt="pull requests welcome badge" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat">
+    </a>
+
 # Coverage Report
 
 | Statements                                                                               | Functions                                                                              | Lines                                                                          |
