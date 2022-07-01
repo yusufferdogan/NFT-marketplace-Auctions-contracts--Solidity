@@ -1,5 +1,5 @@
 <div align="center">
-  <h1 align="center">Awesome Solidity</h1>
+  <h1 align="center">Solidty Auctions</h1>
   <p align="center">
 <!--     <a href="https://github.com/sindresorhus/awesome">
       <img alt="awesome list badge" src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg">
@@ -18,9 +18,9 @@
     </a> -->
   </p>
   
-  <p align="center">A curated list of awesome <a href="https://en.wikipedia.org/wiki/Solidity">Solidity</a> resources, libraries, tools and more.</p>
-  <p align="center">Please check the <a href="CONTRIBUTING.md">contribution guidelines</a> for information on formatting and writing pull requests.</p>
-  
+  <p align="center">An implementations of Auctions based on NFT's</p>
+<!--   <p align="center">Please check the <a href="CONTRIBUTING.md">contribution guidelines</a> for information on formatting and writing pull requests.</p>
+   -->
 </div>
 
 # Coverage Report
