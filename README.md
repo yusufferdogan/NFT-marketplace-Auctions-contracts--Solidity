@@ -23,7 +23,7 @@
    -->
 </div>
 
-#TODO
+# TODO
  - [X] English Auction 
  - [ ] Dutch Auction 
  - [ ] NFT swap
