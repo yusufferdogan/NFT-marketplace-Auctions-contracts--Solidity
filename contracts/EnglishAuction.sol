@@ -23,87 +23,145 @@ contract EnglishAuction is IERC721Receiver {
     error AuctionNotEnded();
     error TransferTxError();
 
-    event Bided(uint256 indexed tokenId, address indexed bidder, uint256 bid);
+    event AuctionCreated(
+        address indexed seller,
+        address indexed contractAddress,
+        uint256 indexed tokenId
+    );
+
+    event Bided(
+        address indexed contractAddress,
+        uint256 indexed tokenId,
+        address indexed bidder,
+        uint256 bid
+    );
+
     event WinnerClaimed(
+        address indexed contractAddress,
         uint256 indexed tokenId,
         address indexed winner,
         uint256 bid
     );
+
     event LooserClaimed(
+        address indexed contractAddress,
         uint256 indexed tokenId,
         address indexed looser,
         uint256 bid
     );
-    event SellerClaimed(uint256 indexed tokenId, address indexed seller);
 
-    IERC721 public immutable nft;
+    event SellerClaimed(
+        address indexed contractAddress,
+        uint256 indexed tokenId,
+        address indexed seller,
+        uint256 totalMoney
+    );
 
-    // tokenId => Auction
-    mapping(uint256 => Auction) public auctions;
-    // tokenId => bidder => bid
-    mapping(uint256 => mapping(address => uint256)) public bids;
-    // tokenId => owner
-    mapping(uint256 => address) public ownerships;
+    // contract Address => tokenId => Auction
+    mapping(address => mapping(uint256 => Auction)) public auctions;
+    // contract Address => tokenId => bidder => bid
+    mapping(address => mapping(uint256 => mapping(address => uint256)))
+        public bids;
+    // contract Address => tokenId => owner
+    mapping(address => mapping(uint256 => address)) public ownerships;
 
-    constructor(address nftAddress) {
-        nft = IERC721(nftAddress);
-    }
+    //constructor() {}
 
-    function createAuction(uint256 endTime, uint256 tokenId)
-        external
-        returns (uint256)
-    {
-        if (ownerships[tokenId] != msg.sender) revert NotOwner();
+    function createAuction(
+        address contractAddress,
+        uint256 tokenId,
+        uint256 startPrice,
+        uint256 endTime
+    ) external returns (uint256) {
+        if (ownerships[contractAddress][tokenId] != msg.sender)
+            revert NotOwner();
 
-        delete ownerships[tokenId];
+        delete ownerships[contractAddress][tokenId];
 
-        auctions[tokenId] = Auction(msg.sender, address(0), 0, endTime);
+        auctions[contractAddress][tokenId] = Auction(
+            msg.sender,
+            // make highest bidder is seller so if no-one is bided he can claim
+            msg.sender,
+            startPrice,
+            endTime
+        );
+        emit AuctionCreated(msg.sender, contractAddress, tokenId);
         return tokenId;
     }
 
     // your total bid must be greater than biggest bid
-    function bid(uint256 tokenId) external payable {
-        Auction storage auction = auctions[tokenId];
+    function bid(address contractAddress, uint256 tokenId) external payable {
+        Auction storage auction = auctions[contractAddress][tokenId];
         // solhint-disable-next-line not-rely-on-time
         if (block.timestamp > auction.endTime) revert AuctionEnded();
 
-        uint256 currentBid = bids[tokenId][msg.sender];
+        uint256 currentBid = bids[contractAddress][tokenId][msg.sender];
         uint256 totalBid = msg.value + currentBid;
 
+        // your total bid must be greatest
         if (totalBid < auction.highestBid)
             revert YourBidMustBeGreatest(msg.value);
 
-        bids[tokenId][msg.sender] += msg.value;
+        bids[contractAddress][tokenId][msg.sender] += msg.value;
         auction.highestBid = totalBid;
         auction.highestBidder = msg.sender;
-        emit Bided(tokenId, msg.sender, msg.value);
+        emit Bided(contractAddress, tokenId, msg.sender, msg.value);
     }
 
-    function claim(uint256 tokenId) external {
-        Auction storage auction = auctions[tokenId];
+    function claim(address contractAddress, uint256 tokenId) external {
+        Auction storage auction = auctions[contractAddress][tokenId];
+        uint256 bidOfSender = bids[contractAddress][tokenId][msg.sender];
+
         uint256 withdrawAmount;
         // solhint-disable-next-line not-rely-on-time
         if (block.timestamp < auction.endTime) revert AuctionNotEnded();
 
         // if you are the highest bidder you win the nft
         if (msg.sender == auction.highestBidder) {
-            nft.safeTransferFrom(address(this), msg.sender, tokenId);
+            IERC721(contractAddress).safeTransferFrom(
+                address(this),
+                msg.sender,
+                tokenId
+            );
+
             auction.highestBidder = address(0);
-            emit WinnerClaimed(tokenId, msg.sender, bids[tokenId][msg.sender]);
+
+            emit WinnerClaimed(
+                contractAddress,
+                tokenId,
+                msg.sender,
+                bidOfSender
+            );
+
             return;
 
             // if you are the seller you take your money
         } else if (msg.sender == auction.seller) {
-            withdrawAmount = auction.highestBid;
+            auction.highestBidder != address(0)
+                ? withdrawAmount = auction.highestBid
+                : withdrawAmount = 0;
+
             auction.seller = address(0);
             auction.highestBid = 0;
-            emit LooserClaimed(tokenId, msg.sender, bids[tokenId][msg.sender]);
-            (tokenId, msg.sender, bids[tokenId][msg.sender]);
+
+            emit SellerClaimed(
+                contractAddress,
+                tokenId,
+                msg.sender,
+                withdrawAmount
+            );
 
             // if you are looser then you take your money back
         } else {
-            withdrawAmount = bids[tokenId][msg.sender];
-            bids[tokenId][msg.sender] = 0;
+            withdrawAmount = bids[contractAddress][tokenId][msg.sender];
+            bids[contractAddress][tokenId][msg.sender] = 0;
+
+            emit LooserClaimed(
+                contractAddress,
+                tokenId,
+                msg.sender,
+                bidOfSender
+            );
         }
         // solhint-disable-next-line avoid-low-level-calls
         (bool isSuccess, ) = payable(msg.sender).call{ value: withdrawAmount }(
@@ -115,8 +173,6 @@ contract EnglishAuction is IERC721Receiver {
 
     /**
      * @notice this function is triggered when _safeMint or _safeTransferFrom is triggered.
-     * @dev i keep both operator and owner so there can be written contract that
-     * takes approve from owner and sell it here ,but rewards goes to owner
      * @param operator who is sended NFT to this contract
      * @param from owner of the NFT
      * @param tokenId ID of the NFT
@@ -128,16 +184,16 @@ contract EnglishAuction is IERC721Receiver {
         uint256 tokenId,
         bytes calldata
     ) external override returns (bytes4) {
-        console.log("---------");
-        console.log(operator);
-        console.log(from);
-        console.log(tokenId);
-        console.log("---------");
+        // console.log("---------");
+        // console.log(operator);
+        // console.log(from);
+        // console.log(tokenId);
+        // console.log("---------");
         // if transfer is minting make operator as owner
         if (from == address(0)) {
             from = operator;
         }
-        ownerships[tokenId] = from;
+        ownerships[msg.sender][tokenId] = from;
         return bytes4(this.onERC721Received.selector);
     }
 }
