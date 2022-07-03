@@ -30,6 +30,13 @@
 - [ ] NFT swap
 - [ ] SEALED_BID AUCTION
 
+# Testing Report 
+
+## English Auction
+
+![image](https://user-images.githubusercontent.com/45846424/177055559-86d4313e-a232-4b0c-ae7a-874e01481f59.png)
+![image](https://user-images.githubusercontent.com/45846424/177055569-9a410eb4-ae9e-4b22-94f1-250944c1de2a.png)
+
 # Coverage Report
 
 | Statements                                                                               | Functions                                                                              | Lines                                                                          |
