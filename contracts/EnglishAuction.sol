@@ -5,11 +5,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-// console.log() @TODO: remove that
-import "hardhat/console.sol";
-
 contract EnglishAuction is IERC721Receiver {
-    // may add open closed cancelled
     struct Auction {
         address seller;
         address highestBidder;
@@ -64,8 +60,6 @@ contract EnglishAuction is IERC721Receiver {
         public bids;
     // contract Address => tokenId => owner
     mapping(address => mapping(uint256 => address)) public ownerships;
-
-    //constructor() {}
 
     function createAuction(
         address contractAddress,
@@ -184,11 +178,6 @@ contract EnglishAuction is IERC721Receiver {
         uint256 tokenId,
         bytes calldata
     ) external override returns (bytes4) {
-        // console.log("---------");
-        // console.log(operator);
-        // console.log(from);
-        // console.log(tokenId);
-        // console.log("---------");
         // if transfer is minting make operator as owner
         if (from == address(0)) {
             from = operator;
