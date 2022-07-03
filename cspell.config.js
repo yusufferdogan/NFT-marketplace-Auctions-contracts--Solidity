@@ -20,6 +20,7 @@ module.exports = {
     // projects
     'ierc',
     'FNFT',
+    'yusufferdogan',
   ],
 
   ignoreWords: [],

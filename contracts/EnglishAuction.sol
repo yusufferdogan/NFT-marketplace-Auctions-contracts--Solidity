@@ -5,6 +5,12 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
+/**
+ * @title English Auction contract for NFT's
+ * @author @yusufferdogan
+ * @notice All NFT contracts are accepted
+ * @dev You must use _safeMint or _safeTransferFrom to use this contract otherwise you nft will be unreachable
+ */
 contract EnglishAuction is IERC721Receiver {
     struct Auction {
         address seller;
