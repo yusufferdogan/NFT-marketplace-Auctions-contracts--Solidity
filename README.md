@@ -26,7 +26,7 @@
 # TODO
 
 - [x] English Auction
-- [ ] Dutch Auction
+- [x] Dutch Auction
 - [ ] NFT swap
 - [ ] SEALED_BID AUCTION
 
