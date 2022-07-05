@@ -32,10 +32,14 @@
 
 # Testing Report 
 
-## English Auction
+## English Auction %100 coverage
 
 ![image](https://user-images.githubusercontent.com/45846424/177055559-86d4313e-a232-4b0c-ae7a-874e01481f59.png)
 ![image](https://user-images.githubusercontent.com/45846424/177055569-9a410eb4-ae9e-4b22-94f1-250944c1de2a.png)
+
+## Dutch Auction %100 coverage
+
+![image](https://user-images.githubusercontent.com/45846424/177413153-7067d34a-97ce-48e7-ab2f-c3160f158668.png)
 
 # Coverage Report
 
