@@ -5,14 +5,11 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-// console.log() @TODO: remove that
-import "hardhat/console.sol";
-
 /**
  * @title English Auction contract for NFT's
  * @author @yusufferdogan
  * @notice All NFT contracts are accepted
- * @dev You must use _safeMint or _safeTransferFrom to use this contract otherwise you nft will be unreachable
+ * @dev You must approve your nft to this contract
  */
 contract DutchAuction {
     struct Auction {
@@ -23,6 +20,7 @@ contract DutchAuction {
         uint256 duration;
     }
 
+    error NotApproved();
     error NotOwner();
     error InsufficientFunds();
     error AuctionEnded();
@@ -56,6 +54,12 @@ contract DutchAuction {
         uint256 discountRate,
         uint256 duration
     ) external returns (uint256) {
+        if (IERC721(contractAddress).getApproved(tokenId) != address(this))
+            revert NotApproved();
+
+        if (IERC721(contractAddress).ownerOf(tokenId) != msg.sender)
+            revert NotOwner();
+
         if (startPrice < discountRate * duration) revert InvalidStartingPrice();
 
         auctions[contractAddress][tokenId] = Auction(

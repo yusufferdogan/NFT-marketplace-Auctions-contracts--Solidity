@@ -102,4 +102,53 @@ describe('DutchAuction', () => {
       contract.connect(addresses[5]).buy(nftContract.address, 1)
     ).to.be.revertedWith('InsufficientFunds');
   });
+
+  it('should not create Auction if not approved', async () => {
+    const startPrice = BigNumber.from('1000');
+    const duration = BigNumber.from('1000');
+    const discountRate = BigNumber.from('1');
+    await nftContract.mint(owner.address, 1, { value: MINT_PRICE });
+
+    await expect(
+      contract.createAuction(
+        nftContract.address,
+        1,
+        startPrice,
+        discountRate,
+        duration
+      )
+    ).to.be.revertedWith('NotApproved');
+  });
+
+  it('should not create Auction if not owner', async () => {
+    const startPrice = BigNumber.from('1000');
+    const duration = BigNumber.from('1000');
+    const discountRate = BigNumber.from('1');
+    await nftContract.mint(owner.address, 1, { value: MINT_PRICE });
+    await nftContract.approve(contract.address, 1);
+
+    await expect(
+      contract
+        .connect(addresses[5])
+        .createAuction(
+          nftContract.address,
+          1,
+          startPrice,
+          discountRate,
+          duration
+        )
+    ).to.be.revertedWith('NotOwner');
+  });
+
+  it('should not buy nft if owner is not owner of nft anymore', async () => {
+    await createAuctionScenario();
+    await nftContract.transferFrom(owner.address, addresses[7].address, 1);
+    const price = await contract.getPrice(nftContract.address, 1);
+
+    await expect(
+      contract
+        .connect(addresses[5])
+        .buy(nftContract.address, 1, { value: price })
+    ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved');
+  });
 });
